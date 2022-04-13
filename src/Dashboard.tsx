@@ -136,7 +136,7 @@ function DashboardContent() {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              Battle Rating Battles
+              Air RB Br calculator
             </Typography>
           </Toolbar>
         </AppBar>

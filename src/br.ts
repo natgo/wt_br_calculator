@@ -17,6 +17,9 @@ export default function br(vehicle: string): string {
   if (vehicle === "mb_175t") {
     return "3.3";
   }
+  if (vehicle === "pb4y-2") {
+    return "5.3";
+  }
   let inp = "";
   while (inp.search(/\d{1,2}\.0|\d{1,2}\.3|\d{1,2}\.7/g)) {
     const input = prompt("Input BR: ");
