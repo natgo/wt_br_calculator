@@ -1,6 +1,4 @@
 import axios from "axios";
-import { useSetRecoilState } from "recoil";
-import { Corrected } from "./atom";
 import br from "./br";
 import lookup from "./lookup";
 
@@ -20,8 +18,7 @@ async function getBR() {
         inp = input;
       }
     }
-    const output = parseFloat(inp);
-    return output;
+    return inp;
   }
 }
 
@@ -29,8 +26,8 @@ async function getcsv() {
   //get the wiki csv
   try {
     const response = await axios.get("https://natgo.xyz/wt/wiki.csv");
-    console.log(response.data.type);
-    return response.data.type;
+    console.log(response.data);
+    return response.data;
   } catch (error) {
     console.error(error);
   }
@@ -64,21 +61,15 @@ function csvJSON(csv: string) {
 export default async function changeParsed(
   sakke: { name: string; id: number }[]
 ) {
-  const setCorrected = useSetRecoilState(Corrected);
-
   const file = await getcsv();
-
+  console.log(file);
   const arr = csvJSON(file);
   const ress = arr.filter(air);
 
   function air(vehicle: { cls: string }): boolean {
     return vehicle.cls === "Aviation";
   }
-  const brb: number = await getBR();
-  const wiki = ress.filter(filterhighbr);
-  function filterhighbr(vehicle: { rb_br: number }) {
-    return vehicle.rb_br <= brb + 1;
-  }
+  const brb: string = await getBR();
 
   let inter: { name: string; br: number }[] = [];
   const result: { name: string; br: number }[] = [];
@@ -93,8 +84,8 @@ export default async function changeParsed(
       console.log(element);
       element = element.substring(0, element.length - 2);
       // wiki = wk.csv to json
-      for (let index = 0; index < wiki.length; index++) {
-        const ement = wiki[index];
+      for (let index = 0; index < ress.length; index++) {
+        const ement = ress[index];
         if (ement.name.search(element) === 0) {
           if (ement.name[ement.name.length - 1] === ")") {
             // empty
@@ -102,6 +93,7 @@ export default async function changeParsed(
             const object = {
               name: ement.name,
               br: ement.rb_br,
+              id: result.length + 1,
             };
             inter.push(object);
           }
@@ -112,12 +104,13 @@ export default async function changeParsed(
       result.push(inter[0]);
       inter = [];
     } else {
-      for (let index = 0; index < wiki.length; index++) {
-        const elemen = wiki[index];
+      for (let index = 0; index < ress.length; index++) {
+        const elemen = ress[index];
         if (elemen.name == element) {
           const object = {
             name: elemen.name,
             br: elemen.rb_br,
+            id: result.length + 1,
           };
           result.push(object);
         }
@@ -126,5 +119,9 @@ export default async function changeParsed(
   });
   result.sort((a, b) => b.br - a.br);
   console.log(result);
-  //setCorrected(() => result);
+  const out = {
+    result: result,
+    br: brb
+  };
+  return out;
 }

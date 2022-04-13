@@ -20,3 +20,9 @@ export const base64Image = atom({
   default: "",
   effects_UNSTABLE: [persistAtom],
 });
+
+export const brb = atom({
+  key: "brb",
+  default: 1.0,
+  effects_UNSTABLE: [persistAtom],
+});

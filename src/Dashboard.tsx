@@ -11,12 +11,14 @@ import { AppBar } from "@mui/material";
 import { useDropzone } from "react-dropzone";
 import $ from "jquery";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { base64Image, Corrected, Parsed } from "./atom";
+import { base64Image, brb, Corrected, Parsed } from "./atom";
 import changeParsed from "./selectors";
 
 function MyDropzone(): JSX.Element {
+  const setCorrected = useSetRecoilState(Corrected);
   const setParsed = useSetRecoilState(Parsed);
   const setImage = useSetRecoilState(base64Image);
+  const setBRB = useSetRecoilState(brb);
   const onDrop = React.useCallback((acceptedFiles) => {
     console.log(acceptedFiles);
     acceptedFiles.forEach((file: Blob) => {
@@ -29,7 +31,7 @@ function MyDropzone(): JSX.Element {
         console.log(file);
         //check this
         console.log(typeof reader.result);
-        if (reader.result === "string") {
+        if (typeof reader.result === "string") {
           const imgg: string = btoa(reader.result);
           console.log(reader.result);
           setImage(() => "data:image/png;base64," + imgg);
@@ -48,7 +50,7 @@ function MyDropzone(): JSX.Element {
             contentType: false,
             processData: false,
             type: "POST",
-          }).done((msg) => {
+          }).done(async (msg) => {
             const aray = msg.ParsedResults[0].ParsedText.split("\n");
             const sakke: { name: string; id: number }[] = [];
             for (let index = 0; index < aray.length; index++) {
@@ -60,7 +62,10 @@ function MyDropzone(): JSX.Element {
               sakke.push(obj);
             }
             setParsed(() => sakke);
-            changeParsed(sakke);
+            const luikka = await changeParsed(sakke);
+            console.log(luikka);
+            setCorrected(() => luikka.result);
+            setBRB(()=> luikka.br);
           });
         } else {
           console.error("not string");
@@ -68,7 +73,7 @@ function MyDropzone(): JSX.Element {
       };
       reader.readAsBinaryString(file);
     });
-  }, []);
+  }, [setBRB, setCorrected, setImage, setParsed]);
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
@@ -100,18 +105,29 @@ function ParsedImage() {
   }
 }
 
+function Br() {
+  const correct: { name: string; br: number }[] = useRecoilValue(Corrected);
+  
+  if (correct[0] === undefined) {
+    return null;
+  } else {
+    return (
+      <Typography>BR: {correct[0].br} - {correct[0].br -1}</Typography>
+    );
+  }
+}
+
 function DashboardContent() {
   const parsed: [] = useRecoilValue(Parsed);
   const correct: [] = useRecoilValue(Corrected);
+  const br = useRecoilValue(brb);
   return (
     <ThemeProvider theme={mdTheme}>
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
         <AppBar position="absolute">
           <Toolbar
-            sx={{
-              pr: "24px", // keep right padding when drawer closed
-            }}
+            
           >
             <Typography
               component="h1"
@@ -152,7 +168,7 @@ function DashboardContent() {
                   <MyDropzone />
                 </Paper>
               </Grid>
-              {/* Recent Deposits */}
+              {/* BR */}
               <Grid item xs={12} md={4} lg={3}>
                 <Paper
                   sx={{
@@ -161,7 +177,7 @@ function DashboardContent() {
                     flexDirection: "column",
                     height: 240,
                   }}
-                ></Paper>
+                ><Typography>Your br: {br}</Typography><Br/></Paper>
               </Grid>
               {/* Parsed text */}
               <Grid item xs={12}>
@@ -185,8 +201,8 @@ function DashboardContent() {
                     })}
                   </div>
                   <div style={{ gridColumn: "3/4" }}>
-                    {correct.map(({ name, id }) => {
-                      return <div key={id}>{name}</div>;
+                    {correct.map(({ name, id, br }) => {
+                      return <div key={id}>{name} | BR: {br}</div>;
                     })}
                   </div>
                 </Paper>
