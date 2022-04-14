@@ -47,9 +47,11 @@ function csvJSON(csv: string) {
       rb_br: 0,
       cls: "",
     };
+    // eslint-disable-next-line security/detect-object-injection
     const currentline = lines[i].split(",");
 
     for (let j = 0; j < headers.length; j++) {
+      // eslint-disable-next-line security/detect-object-injection
       obj[headers[j]] = currentline[j];
     }
 
