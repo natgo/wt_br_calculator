@@ -1,4 +1,6 @@
 import axios from "axios";
+import { setRecoil } from "recoil-nexus";
+import { dialogue } from "./atom";
 import br from "./br";
 import lookup from "./lookup";
 
@@ -9,23 +11,25 @@ async function getBR() {
     const bb = br(response.data.type);
     return bb;
   } catch (error) {
-    let inp = "";
-    while (inp.search(/\d{1,2}\.0|\d{1,2}\.3|\d{1,2}\.7/g)) {
-      const input = prompt("Input BR: ");
-      //check this
-      console.log(typeof input);
-      if (typeof input === "string") {
-        inp = input;
-      }
-    }
-    return inp;
+    setRecoil(dialogue, true);
+    return "1";
+    //let inp = "";
+    //while (inp.search(/\d{1,2}\.0|\d{1,2}\.3|\d{1,2}\.7/g)) {
+    //  const input = prompt("Input BR: ");
+    //  //check this
+    //  console.log(typeof input);
+    //  if (typeof input === "string") {
+    //    inp = input;
+    //  }
+    //}
+    // return inp;
   }
 }
 
 async function getcsv() {
   //get the wiki csv
   try {
-    const response = await axios.get("https://natgo.xyz/wt/wiki.csv");
+    const response = await axios.get("./wiki.csv");
     console.log(response.data);
     return response.data;
   } catch (error) {
@@ -123,7 +127,7 @@ export default async function changeParsed(
   console.log(result);
   const out = {
     result: result,
-    br: brb
+    br: brb,
   };
   return out;
 }
