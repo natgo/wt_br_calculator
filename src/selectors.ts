@@ -1,5 +1,6 @@
 import axios from "axios";
 import { setRecoil } from "recoil-nexus";
+
 import { dialogue } from "./atom";
 import br from "./br";
 import lookup from "./lookup";
@@ -30,7 +31,6 @@ async function getcsv() {
   //get the wiki csv
   try {
     const response = await axios.get("./wiki.csv");
-    console.log(response.data);
     return response.data;
   } catch (error) {
     console.error(error);
@@ -64,11 +64,8 @@ function csvJSON(csv: string) {
   return result;
 }
 
-export default async function changeParsed(
-  sakke: { name: string; id: number }[]
-) {
+export default async function changeParsed(sakke: { name: string; id: number }[]) {
   const file = await getcsv();
-  console.log(file);
   const arr = csvJSON(file);
   const ress = arr.filter(air);
 
@@ -77,21 +74,17 @@ export default async function changeParsed(
   }
   const brb: string = await getBR();
 
-  let inter: { name: string; br: number }[] = [];
-  const result: { name: string; br: number }[] = [];
+  let inter: { name: string; id:number; br: number }[] = [];
+  const result: { name: string; id:number; br: number }[] = [];
 
   sakke.forEach((ele) => {
     let element = ele.name.replace(/\s/g, "_");
     element = lookup(element);
-    if (
-      element[element.length - 2] == "." &&
-      element[element.length - 1] == "."
-    ) {
+    if (element[element.length - 2] == "." && element[element.length - 1] == ".") {
       console.log(element);
       element = element.substring(0, element.length - 2);
       // wiki = wk.csv to json
-      for (let index = 0; index < ress.length; index++) {
-        const ement = ress[index];
+      ress.forEach(ement => {
         if (ement.name.search(element) === 0) {
           if (ement.name[ement.name.length - 1] === ")") {
             // empty
@@ -104,14 +97,13 @@ export default async function changeParsed(
             inter.push(object);
           }
         }
-      }
+      });
       inter.sort((a, b) => a.br - b.br);
       console.log(inter);
       result.push(inter[0]);
       inter = [];
     } else {
-      for (let index = 0; index < ress.length; index++) {
-        const elemen = ress[index];
+      ress.forEach(elemen => {
         if (elemen.name == element) {
           const object = {
             name: elemen.name,
@@ -120,13 +112,21 @@ export default async function changeParsed(
           };
           result.push(object);
         }
-      }
+      });
     }
   });
   result.sort((a, b) => b.br - a.br);
-  console.log(result);
+  const final: {name:string; id:number; br:string}[] = [];
+  result.forEach(element => {
+    final.push({
+      name:element.name,
+      id: element.id,
+      br:element.br.toString()
+    });
+  }); 
+  console.log(final);
   const out = {
-    result: result,
+    result: final,
     br: brb,
   };
   return out;

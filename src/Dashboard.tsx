@@ -1,25 +1,28 @@
 import * as React from "react";
+import { useDropzone } from "react-dropzone";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+
 import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  CssBaseline,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   Paper,
-  Container,
-  Typography,
-  Toolbar,
-  Box,
-  AppBar,
-  CssBaseline,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Dialog,
   TextField,
-  Button,
+  Toolbar,
+  Typography,
 } from "@mui/material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useDropzone } from "react-dropzone";
-import $ from "jquery";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { base64Image, brb, Corrected, dialogue, Parsed } from "./atom";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+
+import { ajax } from "jquery";
+
+import { Corrected, Parsed, base64Image, brb, dialogue } from "./atom";
 import changeParsed from "./selectors";
 
 function MyDropzone(): JSX.Element {
@@ -40,61 +43,59 @@ function MyDropzone(): JSX.Element {
           console.log(file);
           //check this
           console.log(typeof reader.result);
-          if (typeof reader.result === "string") {
-            const imgg: string = btoa(reader.result);
-            console.log(reader.result);
-            setImage(() => "data:image/png;base64," + imgg);
-            console.log(imgg);
-
-            const formData = new FormData();
-            formData.append("base64Image", "data:image/png;base64," + imgg);
-            formData.append("language", "eng");
-            formData.append("OCREngine", "2");
-            formData.append("apikey", "K83430880088957");
-
-            $.ajax({
-              url: "https://api.ocr.space/parse/image",
-              data: formData,
-              dataType: "json",
-              cache: false,
-              contentType: false,
-              processData: false,
-              type: "POST",
-            }).done(async (msg) => {
-              console.log(msg);
-
-              const aray: [] = msg.ParsedResults[0].ParsedText.split("\n");
-              const sakke: { name: string; id: number }[] = [];
-              aray.forEach((element, index) => {
-                const obj = {
-                  name: element,
-                  id: index + 1,
-                };
-                sakke.push(obj);
+          if (file.type === "image/png") {
+            if (typeof reader.result === "string") {
+              const imgg: string = btoa(reader.result);
+              setImage(() => "data:image/png;base64," + imgg);
+  
+              const formData = new FormData();
+              formData.append("base64Image", "data:image/png;base64," + imgg);
+              formData.append("language", "eng");
+              formData.append("OCREngine", "2");
+              formData.append("apikey", "K83430880088957");
+  
+              ajax({
+                url: "https://api.ocr.space/parse/image",
+                data: formData,
+                dataType: "json",
+                cache: false,
+                contentType: false,
+                processData: false,
+                type: "POST",
+              }).done(async (msg) => {
+                console.log(msg);
+  
+                const aray: [] = msg.ParsedResults[0].ParsedText.split("\n");
+                const sakke: { name: string; id: number }[] = [];
+                aray.forEach((element, index) => {
+                  const obj = {
+                    name: element,
+                    id: index + 1,
+                  };
+                  sakke.push(obj);
+                });
+                setParsed(() => sakke);
+                const luikka = await changeParsed(sakke);
+                console.log(luikka);
+                setCorrected(() => luikka.result);
+                setBRB(() => luikka.br);
               });
-              setParsed(() => sakke);
-              const luikka = await changeParsed(sakke);
-              console.log(luikka);
-              setCorrected(() => luikka.result);
-              setBRB(() => luikka.br);
-            });
-          } else {
-            console.error("not string");
+            } else {
+              console.error("type is png but still not string");
+            }
           }
         };
         reader.readAsBinaryString(file);
       });
     },
-    [setBRB, setCorrected, setImage, setParsed]
+    [setBRB, setCorrected, setImage, setParsed],
   );
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
     <div className="dropzone" {...getRootProps()}>
       <input {...getInputProps()} />
-      <p>
-        Drag &apos;n&apos; drop the image here, or click to select the image
-      </p>
+      <p>Drag &apos;n&apos; drop the image here, or click to select the image</p>
     </div>
   );
 }
@@ -104,11 +105,7 @@ const mdTheme = createTheme();
 function ParsedImage() {
   const b64Image = useRecoilValue(base64Image);
   if (b64Image === "") {
-    return (
-      <div style={{ gridColumn: "1/2", gridRow: "2/3" }}>
-        Upload image to begin
-      </div>
-    );
+    return <div style={{ gridColumn: "1/2", gridRow: "2/3" }}>Waiting for image...</div>;
   } else {
     return (
       <div style={{ gridColumn: "1/2", gridRow: "2/3" }}>
@@ -119,16 +116,16 @@ function ParsedImage() {
 }
 
 function Br() {
-  const correct: { name: string; br: number }[] = useRecoilValue(Corrected);
+  const correct = useRecoilValue(Corrected);
 
   if (correct[0] === undefined) {
     return null;
   } else {
     let corto = "";
-    if (correct[0].br - 1 >= 10) {
-      corto = (correct[0].br - 1).toPrecision(3);
+    if (parseFloat(correct[0].br) - 1 >= 10) {
+      corto = (parseFloat(correct[0].br) - 1).toPrecision(3);
     } else {
-      corto = (correct[0].br - 1).toPrecision(2);
+      corto = (parseFloat(correct[0].br) - 1).toPrecision(2);
     }
     return (
       <Typography>
@@ -143,7 +140,6 @@ function Confidence() {
   const correct = useRecoilValue(Corrected);
   if (correct[0]) {
     if (parseFloat(yourBR) + 1 === parseFloat(correct[0].br)) {
-      console.log(true);
       return <Typography>Confidence: 100%</Typography>;
     } else {
       return null;
@@ -158,8 +154,8 @@ function DashboardContent() {
   const setBRB = useSetRecoilState(brb);
   const setOpen = useSetRecoilState(dialogue);
 
-  const parsed: [] = useRecoilValue(Parsed);
-  const correct: [] = useRecoilValue(Corrected);
+  const parsed = useRecoilValue(Parsed);
+  const correct = useRecoilValue(Corrected);
   const br = useRecoilValue(brb);
   return (
     <ThemeProvider theme={mdTheme}>
@@ -167,13 +163,7 @@ function DashboardContent() {
         <CssBaseline />
         <AppBar position="absolute">
           <Toolbar>
-            <Typography
-              component="h1"
-              variant="h6"
-              color="inherit"
-              noWrap
-              sx={{ flexGrow: 1 }}
-            >
+            <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
               Air RB Br calculator
             </Typography>
           </Toolbar>
@@ -182,9 +172,7 @@ function DashboardContent() {
           component="main"
           sx={{
             backgroundColor: (theme) =>
-              theme.palette.mode === "light"
-                ? theme.palette.grey[100]
-                : theme.palette.grey[900],
+              theme.palette.mode === "light" ? theme.palette.grey[100] : theme.palette.grey[900],
             flexGrow: 1,
             height: "100vh",
             overflow: "auto",
@@ -228,15 +216,12 @@ function DashboardContent() {
                     p: 2,
                     display: "grid",
                     gridTemplateRows: "min-content 1fr",
+                    minHeight: "400px",
                   }}
                 >
                   <ParsedImage />
-                  <Typography style={{ gridColumn: "2/3" }}>
-                    Parsed text:{" "}
-                  </Typography>
-                  <Typography style={{ gridColumn: "3/4" }}>
-                    Corrected text:{" "}
-                  </Typography>
+                  <Typography style={{ gridColumn: "2/3" }}>Parsed text: </Typography>
+                  <Typography style={{ gridColumn: "3/4" }}>Corrected text: </Typography>
                   <div style={{ gridColumn: "2/3" }}>
                     {parsed.map(({ name, id }) => {
                       return <div key={id}>{name}</div>;
@@ -268,9 +253,7 @@ function DashboardContent() {
                   <DialogActions>
                     <Button
                       onClick={() => {
-                        const inp = document.getElementById(
-                          "name"
-                        ) as HTMLInputElement;
+                        const inp = document.getElementById("name") as HTMLInputElement;
                         console.log(inp.value);
                         setBRB(() => inp.value);
                         setOpen(() => false);
