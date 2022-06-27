@@ -23,13 +23,10 @@ describe("Normal App test", () => {
   });
   it("Input BR", () => {
     cy.get("#name")
-      .type("3.0")
-      .should("have.value", "3.0");
+      .type("3.3")
+      .should("have.value", "3.3");
     cy.contains("Ok").click();
-    cy.contains("Your br: 3.0");
-  });
-  it("Test confidence", () => {
-    cy.contains("Confidence: 100%");
+    cy.contains("Your br: 3.3");
   });
 });
 
@@ -48,14 +45,13 @@ describe("Ingame App test", () => {
     //  });
     //});
   });
-  it("Input BR", () => {
-    cy.get("#name")
-      .type("3.0")
-      .should("have.value", "3.0");
-    cy.contains("Ok").click();
-    cy.contains("Your br: 3.0");
-  });
-  it("Test confidence", () => {
-    cy.contains("Confidence: 100%");
+  it("Test Ingame BR", () => {
+    cy.intercept("GET", "http://localhost:8111/indicators", {
+      statusCode: 200,
+      body: {
+        "valid": true,
+        "type": "p_108b_serie1",
+      },
+    });
   });
 });

@@ -3,7 +3,7 @@ export default function lookup(element: string): string {
     element = "Spitfire_Mk_Ia";
   }
   if (element[0] == "*") {
-    element = element.substring(1, element.length) + "_(USSR)";
+    element = element.substring(1, element.length) + "_(China)";
   }
   if (element == "Ki-44-1") {
     element = "Ki-44-I";
@@ -28,6 +28,24 @@ export default function lookup(element: string): string {
   }
   if (element == "SE_F4U-1A'") {
     element = "F4U-1A_(Japan)";
+  }
+  if (element == "Ar_234_C3") {
+    element = "Ar_234_C-3";
+  }
+  if (element == "Spithre_F_Mk_24") {
+    element = "Spitfire_F_Mk_24";
+  }
+  if (element == "P.400") {
+    element = "P-400";
+  }
+  if (element == "TBD_1") {
+    element = "TBD-1";
+  }
+  if (element == "PBY_5_Catalina") {
+    element = "PBY-5_Catalina";
+  }
+  if (element == "Beaufort_Mk_Vill") {
+    element = "Beaufort_Mk_VIII";
   }
   return element;
 }

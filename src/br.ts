@@ -1,6 +1,12 @@
+import { setRecoil } from "recoil-nexus";
+import { dialogue } from "./atom";
+
 export default function br(vehicle: string): string {
   if (vehicle === "he-177a-5") {
     return "6.0";
+  }
+  if (vehicle === "p_108b_serie1") {
+    return "3.3";
   }
   if (vehicle === "z_1007_bis_serie3") {
     return "2.7";
@@ -20,14 +26,12 @@ export default function br(vehicle: string): string {
   if (vehicle === "pb4y-2") {
     return "5.3";
   }
-  let inp = "";
-  while (inp.search(/\d{1,2}\.0|\d{1,2}\.3|\d{1,2}\.7/g)) {
-    const input = prompt("Input BR: ");
-    //check this
-    console.log(typeof input);
-    if (typeof input === "string") {
-      inp = input;
-    }
+  if (vehicle === "go229_v3") {
+    return "7.0";
   }
-  return inp;
+  if (vehicle === "he-162a-2") {
+    return "6.0";
+  }
+  setRecoil(dialogue, true);
+  return "1";
 }
