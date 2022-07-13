@@ -20,7 +20,7 @@
     "react-dom": "18.2.0",
     "react-dropzone": "14.2.1",
     "recoil": "0.7.3",
-    "recoil-nexus": "0.3.15",
+    "recoil-nexus": "0.3.18",
     "recoil-persist": "4.2.0"
   },
   "devDependencies": {
