@@ -18,7 +18,7 @@
     "jquery": "^3.6.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-dropzone": "14.2.1",
+    "react-dropzone": "14.2.2",
     "recoil": "0.7.4",
     "recoil-nexus": "0.3.18",
     "recoil-persist": "4.2.0"
